@@ -44,7 +44,7 @@ class State(TypedDict):
 async def interaction(request: Request):
     data = await request.json()
     log.debug(data)
-    return Response("PONG", 200)
+    return JSONResponse({'type': 1})
     
 
 
