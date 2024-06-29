@@ -2,3 +2,4 @@ discord.py
 starlette
 uvicorn
 python-dotenv
+pynacl

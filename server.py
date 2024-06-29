@@ -15,6 +15,8 @@ from dotenv import load_dotenv
 import sys
 import os
 from starlette.responses import PlainTextResponse, JSONResponse, Response
+from nacl.signing import VerifyKey
+from nacl.exceptions import BadSignatureError
 load_dotenv()
 
 
@@ -41,14 +43,28 @@ class Bot(commands.Bot):
 class State(TypedDict):
     bot:  Bot
 
+async def verify_signature(request: Request) -> bool:
+    try:
+        sig = request.headers['X-Signature-Ed25519']
+        stamp = request.headers['X-Signature-Timestamp']
+        body = (await request.body()).decode('utf-8')
+        verify_key = VerifyKey(bytes.fromhex(os.environ['PUBLIC_KEY']))
+        verify_key.verify(f'{stamp}{body}'.encode(), bytes.fromhex(sig))
+        return True
+    except (KeyError, BadSignatureError):
+        return False
+
 async def interaction(request: Request):
+    verified = await verify_signature(request)
+    if not verified:
+        return Response(status_code=401)
+    
     data = await request.json()
     log.debug(data)
     response = {'type': 1}
     log.debug(f"Responding: {response}")
     return JSONResponse(response)
     
-
 
 
 class MyView(ui.View):
