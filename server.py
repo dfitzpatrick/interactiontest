@@ -14,7 +14,7 @@ from typing import TypedDict, AsyncIterator
 from dotenv import load_dotenv
 import sys
 import os
-from starlette.responses import PlainTextResponse
+from starlette.responses import PlainTextResponse, JSONResponse, Response
 load_dotenv()
 
 
@@ -42,8 +42,10 @@ class State(TypedDict):
     bot:  Bot
 
 async def interaction(request: Request):
-    log.debug(request.body)
-    return PlainTextResponse("FOO")
+    data = await request.json()
+    log.debug(data)
+    return Response("PONG", 200)
+    
 
 
 
